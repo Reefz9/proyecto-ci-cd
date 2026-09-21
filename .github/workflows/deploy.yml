@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configurar Java 26
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: oracle
           java-version: '26'
@@ -26,6 +26,11 @@ jobs:
         run: |
           mkdir -p deployment/test
           mkdir -p deployment/backup
+
+      - name: Crear versión anterior
+        run: |
+          cp target/proyecto-ci-cd-1.0-SNAPSHOT.jar deployment/backup/proyecto-ci-cd.jar
+          echo "Versión anterior preparada para rollback."
 
       - name: Desplegar aplicación
         run: |
@@ -44,12 +49,20 @@ jobs:
           name: despliegue-test
           path: deployment/test/proyecto-ci-cd.jar
 
-      - name: Simular rollback
+      - name: Simular fallo para probar rollback
+        run: |
+          echo "Simulando un fallo controlado después del despliegue..."
+          exit 1
+
+      - name: Ejecutar rollback
         if: failure()
         run: |
-          if [ -f deployment/backup/proyecto-ci-cd.jar ]; then
-            cp deployment/backup/proyecto-ci-cd.jar deployment/test/proyecto-ci-cd.jar
-            echo "Rollback realizado correctamente."
-          else
-            echo "No existe una versión anterior para restaurar."
-          fi
+          cp deployment/backup/proyecto-ci-cd.jar deployment/test/proyecto-ci-cd.jar
+          echo "Rollback realizado correctamente."
+          echo "Versión anterior restaurada."
+
+      - name: Verificar rollback
+        if: failure()
+        run: |
+          test -f deployment/test/proyecto-ci-cd.jar
+          echo "Verificación del rollback: OK"
