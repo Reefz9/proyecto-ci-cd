@@ -4,14 +4,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class AppTest {
+class AppAcceptanceTest {
 
     @Test
-    void debeSumarDosNumeros() {
+    void debeCumplirElComportamientoEsperadoPorElUsuario() {
         App app = new App();
 
-        int resultado = app.sumar(2, 3);
+        int resultado = app.sumar(10, 20);
 
-        assertEquals(5, resultado);
+        assertEquals(30, resultado);
     }
 }
